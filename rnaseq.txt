@@ -1,0 +1,29 @@
+#trimmomatic
+conda install bioconda::trimmomatic
+read1="/filepath/okra/seq_1.fastq"
+read2="/filepath/okra/seq_2.fastq"                
+outputFP="/filepath/seq.trimmed.paired_1.fastq.gz"
+outputFU="/filepath/seq.trimmed.unpaired_1.fastq.gz"
+outputRP="/filepath/seq.trimmed.paired_2.fastq.gz"
+outputRU="/filepath/seq.trimmed.unpaired_2.fastq.gz"
+threads=8                                                                       
+trimmomatic PE \
+threads $threads $read1 $read2 \
+$outputFP $outputFU \
+$outputRP $outputRU \
+ILLUMINACLIP:/filepath/anaconda3/share/trimmomatic-0.39-2/adapters/TruSeq3-PE.fa:2:30:10:8:true HEADCROP:3 TRAILING:10 MINLEN:2
+
+#trinity
+conda install bioconda::trinity
+Trinity
+Trinity --seqType fq --max_memory 50G \
+         --left seq.trimmed.paired_1.fastq.gz  --right seq.trimmed.paired_2.fastq.gz --CPU 6
+
+#split files 
+conda install -c bioconda seqkit
+seqkit split -p 6 output.fasta
+
+#kallisto
+conda install bioconda::kallisto
+kallisto index -i transcriptome.idx output.fasta
+kallisto quant -i transcriptome.idx -o output_folder -b 100 seq_1.fastq seq_2.fastq
